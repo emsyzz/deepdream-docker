@@ -6,33 +6,21 @@
 import PIL.Image as im
 import sys
 import math
+import scipy.ndimage as nd
+import numpy as np
 
 img = im.open("/data/%s" % sys.argv[1])
 
-zoom = 1 + float(sys.argv[2])
+h, w = img.size[:2]
 
-originSize = img.size[0], img.size[1]
+s = float(sys.argv[2])
 
-largeSize = int(math.ceil(img.size[0] * zoom)), int(math.ceil(img.size[1] * zoom))
-
-imgLarge = img.resize(largeSize)
-
-hDiff = int(math.floor((largeSize[0] - originSize[0]) / 2))
-vDiff = int(math.floor((largeSize[1] - originSize[1]) / 2))
-
-zoomBox = ( \
-  hDiff, \
-  vDiff, \
-  originSize[0] + hDiff, \
-  originSize[1] + vDiff  \
-)
-
-imgZoomed = imgLarge.crop(zoomBox)
+zoomed = nd.affine_transform(img, [1-s,1-s,1], [h*s/2,w*s/2,0], order=1)
 
 outfile = sys.argv[1]
 
 if len(sys.argv) > 3:
   outfile = sys.argv[3]
 
-imgZoomed.save("/data/%s" % outfile)
+im.fromarray(np.uint8(zoomed)).save("/data/%s" % outfile)
 

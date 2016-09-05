@@ -62,14 +62,27 @@ def preprocess(net, img):
 def deprocess(net, img):
     return np.dstack((img + net.transformer.mean['data'])[::-1])
 
-def make_step(net, step_size=1.5, end='inception_4c/output', jitter=32, clip=True):
+def objective_L2(dst):
+    dst.diff[:] = dst.data 
+
+
+def objective_guide(dst):
+    x = dst.data[0].copy()
+    y = guide_features
+    ch = x.shape[0]
+    x = x.reshape(ch,-1)
+    y = y.reshape(ch,-1)
+    A = x.T.dot(y) # compute the matrix of dot-products with guide features
+    dst.diff[0].reshape(ch,-1)[:] = y[:,A.argmax(1)] # select ones that match best
+
+def make_step(net, step_size=1.5, end='inception_4c/output', jitter=32, clip=True, objective=objective_L2):
     '''Basic gradient ascent step.'''
     src = net.blobs['data'] # input image is stored in Net's 'data' blob
     dst = net.blobs[end]
     ox, oy = np.random.randint(-jitter, jitter+1, 2)
     src.data[0] = np.roll(np.roll(src.data[0], ox, -1), oy, -2) # apply jitter shift
     net.forward(end=end)
-    dst.diff[:] = dst.data  # specify the optimization objective
+    objective(dst)  # specify the optimization objective
     net.backward(start=end)
     g = src.diff[0]
     # apply normalized ascent step to the input image
@@ -130,18 +143,36 @@ if not os.path.exists("/data/output"):
 if not os.path.exists("/data/output/tmp"):
   os.mkdir("/data/output/tmp")
 
+guide_image = os.getenv("GUIDE", "")
+
+guide_on = False
+if guide_image:
+  guide = np.float32(PIL.Image.open("/data/%s" % guide_image))
+  showarray(guide)
+  end = 'inception_3b/output'
+  h, w = guide.shape[:2]
+  src, dst = net.blobs['data'], net.blobs[end]
+  src.reshape(1,3,h,w)
+  src.data[0] = preprocess(net, guide)
+  net.forward(end=end)
+  guide_features = dst.data[0].copy()
+  guide_on = True
+
 print "This might take a little while..."
 print "Generating first sample..."
-step_one = deepdream(net, img)
+if guide_on:
+  step_one = deepdream(net, img, end=end, objective=objective_guide)
+else:
+  step_one = deepdream(net, img)
 step_one_output = os.getenv("OUTPUT", "step_one.jpg")
 step_one_outfile = "/data/output/"+step_one_output
 PIL.Image.fromarray(np.uint8(step_one)).save(step_one_outfile)
 
 sys.exit('Step one done')
 
-print "Generating second sample..."
-step_two = deepdream(net, img, end='inception_3b/5x5_reduce')
-PIL.Image.fromarray(np.uint8(step_two)).save("/data/output/step_two.jpg")
+#print "Generating second sample..."
+#step_two = deepdream(net, img, end='inception_3b/5x5_reduce')
+#PIL.Image.fromarray(np.uint8(step_two)).save("/data/output/step_two.jpg")
 
 frame = img
 frame_i = 0
