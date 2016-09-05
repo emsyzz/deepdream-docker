@@ -35,5 +35,7 @@ VOLUME ["/data"]
 
 WORKDIR /
 ADD deepdream.py /deepdream.py
+ADD dd.sh /dd.sh
+ADD image-zoom.py /image-zoom.py
 
 CMD ["python", "-u", "deepdream.py"]

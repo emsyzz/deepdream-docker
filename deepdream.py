@@ -8,6 +8,8 @@ import PIL.Image
 import os
 from IPython.display import clear_output, Image, display
 from google.protobuf import text_format
+import sys
+
 import time
 
 import caffe
@@ -21,6 +23,7 @@ def showarray(a):
 
 input_file = os.getenv('INPUT', 'input.png')
 iterations = os.getenv('ITER', 50)
+
 try:
     iterations = int(iterations)
 except ValueError:
@@ -130,7 +133,11 @@ if not os.path.exists("/data/output/tmp"):
 print "This might take a little while..."
 print "Generating first sample..."
 step_one = deepdream(net, img)
-PIL.Image.fromarray(np.uint8(step_one)).save("/data/output/step_one.jpg")
+step_one_output = os.getenv("OUTPUT", "step_one.jpg")
+step_one_outfile = "/data/output/"+step_one_output
+PIL.Image.fromarray(np.uint8(step_one)).save(step_one_outfile)
+
+sys.exit('Step one done')
 
 print "Generating second sample..."
 step_two = deepdream(net, img, end='inception_3b/5x5_reduce')
