@@ -19,7 +19,7 @@ while [ ! -z $1 ]; do
     if [[ -f "/data/output/${OUTPUT}" ]]; then
       if [[ ! -z $3 ]]; then
         python image-zoom.py "output/${OUTPUT}" "$ZOOM"
-        ZOOM=$(python -c "print $ZOOM+0.005")
+        #ZOOM=$(python -c "print $ZOOM+0.005")
       fi
     else
       exit 1
