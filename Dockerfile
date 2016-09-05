@@ -9,6 +9,8 @@ RUN apt-get install -y libprotobuf-dev libleveldb-dev libsnappy-dev libopencv-de
 # Python + pip
 RUN apt-get install -y python python-dev python-pip python-numpy python-scipy
 
+# Install terminal dependencies
+apt-get install -y tmux vim
 
 # Caffe
 RUN git clone https://github.com/BVLC/caffe.git /caffe
@@ -28,7 +30,6 @@ ENV PYTHONPATH=/caffe/python
 
 # Download model
 RUN scripts/download_model_binary.py models/bvlc_googlenet
-
 
 VOLUME ["/data"]
 
