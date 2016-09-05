@@ -23,6 +23,8 @@ docker run -i -t -e INPUT=your_file.png -e ITER=20 -e SCALE=0.10 -e MODEL='incep
 
 ```
 docker run -i -t -e MODEL='inception_3b/5x5_reduce' -v /c/Users/---/Desktop:/data herval/deepdream bash
+
+$ ./dd.sh your_file.jpg [<sample_num> [<zoom>]]
 ```
 
 Replace  `/path/to/your/folder` to the folder where your `INPUT` file is. That's also where the output will be written to.
