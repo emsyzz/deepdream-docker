@@ -10,7 +10,7 @@ RUN apt-get install -y libprotobuf-dev libleveldb-dev libsnappy-dev libopencv-de
 RUN apt-get install -y python python-dev python-pip python-numpy python-scipy
 
 # Install terminal dependencies
-apt-get install -y tmux vim
+RUN apt-get install -y tmux vim
 
 # Caffe
 RUN git clone https://github.com/BVLC/caffe.git /caffe
